@@ -1,7 +1,7 @@
 package com.hfad.auth.data.di
 
-import com.hfad.auth.data.AuthRepositoryImpl
-import com.hfad.auth.domain.AuthRepository
+import com.hfad.auth.data.repository.AuthRepositoryImpl
+import com.hfad.auth.domain.repository.AuthRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

@@ -4,8 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.hfad.auth.ui.navigation.AuthFeature
-import com.hfad.main.navigation.MainFeature
+import com.hfad.auth.navigation.AuthFeature
 
 
 @SuppressLint("UnrememberedGetBackStackEntry")

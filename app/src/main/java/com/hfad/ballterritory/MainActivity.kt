@@ -6,12 +6,12 @@ import androidx.activity.compose.setContent
 import androidx.lifecycle.lifecycleScope
 
 import androidx.navigation.compose.rememberNavController
-import com.hfad.auth.ui.navigation.AuthFeature
+import com.hfad.auth.navigation.AuthFeature
 
 
 import com.hfad.ballterritory.navigation.RootNavGraph
 import com.hfad.data.token.tokens.SessionManager
-import com.hfad.main.navigation.MainFeature
+import com.hfad.ballterritory.navigation.MainFeature
 
 
 import dagger.hilt.android.AndroidEntryPoint

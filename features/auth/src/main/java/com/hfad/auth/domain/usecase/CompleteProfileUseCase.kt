@@ -1,6 +1,6 @@
 package com.hfad.auth.domain.usecase
 
-import com.hfad.auth.domain.AuthRepository
+import com.hfad.auth.domain.repository.AuthRepository
 import com.hfad.data.token.user.UserStorage
 import javax.inject.Inject
 

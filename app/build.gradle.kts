@@ -50,6 +50,10 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
     //modules
+    implementation(projects.features.coaches)
+    implementation(projects.features.profile)
+    implementation(projects.features.rent)
+    implementation(projects.features.schedule)
     implementation(projects.features.main)
     implementation(projects.core.network)
    implementation(projects.core.database)

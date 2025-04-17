@@ -8,7 +8,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.hfad.module.User
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,6 +22,8 @@ class UserStorageImpl @Inject constructor(
         private val USER_ID = stringPreferencesKey("user_id")
         private val USER_PHONE = stringPreferencesKey("user_phone")
         private val USER_NAME = stringPreferencesKey("user_name")
+        private val USER_EMAIL = stringPreferencesKey("user_email")
+
     }
 
     override suspend fun saveUser(user: User) {
@@ -30,6 +31,8 @@ class UserStorageImpl @Inject constructor(
             prefs[USER_ID] = user.id
             prefs[USER_PHONE] = user.phone
             prefs[USER_NAME] = user.name ?: ""
+            prefs[USER_EMAIL] = user.email ?: ""
+
         }
     }
 
@@ -38,7 +41,8 @@ class UserStorageImpl @Inject constructor(
         val id = prefs[USER_ID] ?: return null
         val phone = prefs[USER_PHONE] ?: return null
         val name = prefs[USER_NAME]
-        return User(id = id, phone = phone, name = name)
+        val email = prefs[USER_EMAIL]
+        return User(id = id, phone = phone, name = name, email = email)
     }
 
     override suspend fun clearUser() {
@@ -46,6 +50,8 @@ class UserStorageImpl @Inject constructor(
             prefs.remove(USER_ID)
             prefs.remove(USER_PHONE)
             prefs.remove(USER_NAME)
+            prefs.remove(USER_EMAIL)
+
         }
     }
 }

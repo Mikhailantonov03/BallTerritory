@@ -1,12 +1,15 @@
 package com.hfad.auth.ui.screen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.hfad.auth.ui.mvi.AuthUiState
 import com.hfad.auth.ui.mvi.UiStatus
 
@@ -29,7 +32,10 @@ fun EnterPhoneScreen(
             value = phone,
             onValueChange = { phone = it },
             label = { Text("Введите номер телефона") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Phone
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -47,7 +53,7 @@ fun EnterPhoneScreen(
             }
             is UiStatus.Error -> {
                 Text(
-                    text = (uiState.status as UiStatus.Error).message,
+                    text = (uiState.status ).message,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(top = 8.dp)
                 )

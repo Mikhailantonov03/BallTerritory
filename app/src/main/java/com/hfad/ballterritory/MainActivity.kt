@@ -28,9 +28,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         lifecycleScope.launch {
-            val startDestination = if (sessionManager.isLoggedIn()) {
+            val startDestination = if (sessionManager.isLoggedIn() || sessionManager.isGuest()) {
 
-                 MainFeature.route
+
+                MainFeature.route
             } else {
                 AuthFeature.route
             }

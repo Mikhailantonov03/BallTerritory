@@ -13,6 +13,7 @@ import com.hfad.auth.ui.mvi.AuthIntents
 import com.hfad.auth.ui.mvi.AuthReducer
 import com.hfad.auth.ui.mvi.AuthUiState
 import com.hfad.auth.ui.mvi.UiStatus
+import com.hfad.data.token.tokens.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,10 +26,17 @@ class AuthViewModel @Inject constructor(
     private val sendPhoneUseCase: SendPhoneUseCase,
     private val verifyCodeAndSaveUseCase: VerifyCodeAndSaveUseCase,
     private val completeProfileUseCase: CompleteProfileUseCase,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
-    companion object {
+    fun markAsGuest(onDone: () -> Unit) {
+        viewModelScope.launch {
+            sessionManager.setGuestMode(true)
+            onDone()
+        }
+    }
+        companion object {
         private const val KEY_PHONE = "phone_number"
     }
 
@@ -47,7 +55,7 @@ class AuthViewModel @Inject constructor(
             when (intent) {
                 is AuthIntents.OnPhoneEntered -> handlePhoneEntered(intent.phone)
                 is AuthIntents.OnCodeEntered -> handleCodeEntered(intent.code)
-                is AuthIntents.OnProfileCompleted -> handleProfileCompleted(intent.name)
+                is AuthIntents.OnProfileCompleted -> handleProfileCompleted(intent.name, intent.email)
             }
         }
     }
@@ -75,7 +83,7 @@ class AuthViewModel @Inject constructor(
                 when (saveResult) {
                     is SaveResult.NewUser -> AuthUiState(
                         tokens = saveResult.tokens,
-                        user = saveResult.user, // 👈 сохраняем user
+                        user = saveResult.user,
                         requiresProfileCompletion = true
                     )
                     is SaveResult.ExistingUser -> AuthUiState(
@@ -87,8 +95,8 @@ class AuthViewModel @Inject constructor(
         )
     }
 
-    private suspend fun handleProfileCompleted(name: String) {
-        val result = completeProfileUseCase(name)
+    private suspend fun handleProfileCompleted(name: String, email:String) {
+        val result = completeProfileUseCase(name,email)
         _uiState.value = if (result.isSuccess) {
             AuthUiState(status = UiStatus.Idle)
         } else {

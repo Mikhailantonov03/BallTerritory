@@ -11,5 +11,6 @@ data class CodeRequest(
     val code: String
 )
 data class ProfileRequest(
-    val name: String
+    val name: String,
+    val email: String
 )

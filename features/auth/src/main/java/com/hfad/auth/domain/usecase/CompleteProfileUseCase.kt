@@ -8,10 +8,15 @@ class CompleteProfileUseCase @Inject constructor(
     private val repository: AuthRepository,
     private val userStorage: UserStorage
 ) {
-    suspend operator fun invoke(name: String): Result<Unit> {
+    suspend operator fun invoke(name: String,email: String): Result<Unit> {
         val user = userStorage.getUser()
         return if (user != null) {
-            repository.completeProfile(user.id, name)
+           val result = repository.completeProfile(user.id, name,email)
+            if (result.isSuccess) {
+                val updatedUser = user.copy(name = name, email = email)
+                userStorage.saveUser(updatedUser)
+            }
+            result
         } else {
             Result.failure(IllegalStateException("User not found in storage"))
         }

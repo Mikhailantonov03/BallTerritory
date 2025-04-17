@@ -24,12 +24,12 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun verifyCode(code: CodeRequest): Result<Pair<User, AuthTokens>> {
         return safeApiCall { authApi.verifyCode(code) }
             .map { authResponse ->
-                authResponse.toDomain(phoneFromInput = code.phone) // возвращает Pair<User, AuthTokens>
+                authResponse.toDomain(phoneFromInput = code.phone)
             }
     }
-    override suspend fun completeProfile(userId: String, name: String): Result<Unit> {
+    override suspend fun completeProfile(userId: String, name: String,email: String): Result<Unit> {
         return safeApiCall {
-            authApi.completeProfile(ProfileRequest(name))
+            authApi.completeProfile(ProfileRequest(name,email))
         }
     }
 

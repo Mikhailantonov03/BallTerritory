@@ -5,4 +5,7 @@ interface TokenStorage {
     suspend fun getAccessToken(): String?
     suspend fun getRefreshToken(): String?
     suspend fun clearTokens()
+    suspend fun setGuestMode(enabled: Boolean)
+    suspend fun isGuestMode(): Boolean
+
 }

@@ -19,7 +19,24 @@ class TokenStorageImpl @Inject constructor(
     companion object {
         private val ACCESS_TOKEN = stringPreferencesKey("access_token")
         private val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
+        private val IS_GUEST = stringPreferencesKey("is_guest")
+
     }
+
+
+    override suspend fun setGuestMode(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[IS_GUEST] = enabled.toString()
+        }
+    }
+
+    override suspend fun isGuestMode(): Boolean {
+        return context.dataStore.data
+            .map { prefs -> prefs[IS_GUEST] == "true" }
+            .firstOrNull() ?: false
+    }
+
+
 
     override suspend fun saveTokens(access: String, refresh: String) {
         context.dataStore.edit { prefs ->

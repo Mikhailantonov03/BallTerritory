@@ -10,11 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.tooling.preview.Preview
 
 
 @Composable
-fun StartScreen(onStart: () -> Unit) {
+fun StartScreen(onStart: () -> Unit,
+                onSkipClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -27,6 +29,12 @@ fun StartScreen(onStart: () -> Unit) {
         Button(onClick = onStart) {
             Text("Продолжить")
         }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextButton(onClick = onSkipClick) {
+            Text("Пропустить")
+        }
+
     }
 }
 
@@ -35,7 +43,7 @@ fun StartScreen(onStart: () -> Unit) {
 @Composable
 fun StartScreenPreview() {
     MaterialTheme {
-        StartScreen(onStart = {})
+        StartScreen(onStart = {}, onSkipClick = {})
     }
 }
 

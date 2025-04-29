@@ -86,7 +86,7 @@
                 onComplete = { name,email ->
                     viewModel.onIntent(AuthIntents.OnProfileCompleted(name,email))
 
-                    navController.navigateTo<MainRoute>(popUpToStart = true, inclusive = true)
+                    navController.navigateTo<MainRoute>(popToRoot = true)
                 }
             )
         }

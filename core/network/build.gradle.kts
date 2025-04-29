@@ -37,6 +37,10 @@ android {
 }
 
 dependencies {
+
+
+    implementation(projects.core.model)
+    implementation(projects.core.data)
     //hilt
     implementation(libs.dagger.hilt)
     ksp(libs.dagger.hilt.compiler)
@@ -46,6 +50,7 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
+    implementation(libs.androidx.material3.android)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -54,4 +59,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+configurations.all {
+    exclude(group = "com.intellij", module = "annotations")
 }

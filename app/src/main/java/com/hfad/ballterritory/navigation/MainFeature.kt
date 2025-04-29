@@ -11,12 +11,20 @@ import com.hfad.navigation.routes.MainRoute
 object MainFeature : FeatureApi {
     override val route = MainRoute
 
-    override fun registerGraph(
+     override fun registerGraph(
         navGraphBuilder: NavGraphBuilder,
         navController: NavController
     ) {
+        error("You must call registerGraph with onLoginRequested for MainFeature")
+    }
+
+     fun registerGraph(
+        navGraphBuilder: NavGraphBuilder,
+        navController: NavController,
+        onLoginRequested: () -> Unit
+    ) {
         navGraphBuilder.composable<MainRoute> {
-            MainScreenWrapper()
+            MainScreenWrapper(onLoginRequested = onLoginRequested)
         }
     }
 }

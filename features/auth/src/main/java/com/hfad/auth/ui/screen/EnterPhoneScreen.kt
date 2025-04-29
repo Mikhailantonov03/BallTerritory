@@ -11,7 +11,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hfad.auth.ui.mvi.AuthUiState
-import com.hfad.auth.ui.mvi.UiStatus
+import com.hfad.module.UiStatus
 
 @Composable
 fun EnterPhoneScreen(

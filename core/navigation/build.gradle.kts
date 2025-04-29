@@ -19,9 +19,7 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.1.1"
-    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -63,4 +61,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+configurations.all {
+    exclude(group = "com.intellij", module = "annotations")
 }

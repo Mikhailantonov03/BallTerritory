@@ -1,58 +1,61 @@
 package com.hfad.data.token.user
 
-
 import android.content.Context
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.hfad.module.User
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
-
-private val Context.userDataStore by preferencesDataStore(name = "user_prefs")
 
 @Singleton
 class UserStorageImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : UserStorage {
 
-    companion object {
-        private val USER_ID = stringPreferencesKey("user_id")
-        private val USER_PHONE = stringPreferencesKey("user_phone")
-        private val USER_NAME = stringPreferencesKey("user_name")
-        private val USER_EMAIL = stringPreferencesKey("user_email")
+    private val prefs: SharedPreferences by lazy {
+        context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    }
 
+    companion object {
+        private const val USER_ID = "user_id"
+        private const val USER_PHONE = "user_phone"
+        private const val USER_NAME = "user_name"
+        private const val USER_EMAIL = "user_email"
     }
 
     override suspend fun saveUser(user: User) {
-        context.userDataStore.edit { prefs ->
-            prefs[USER_ID] = user.id
-            prefs[USER_PHONE] = user.phone
-            prefs[USER_NAME] = user.name ?: ""
-            prefs[USER_EMAIL] = user.email ?: ""
-
+        withContext(Dispatchers.IO) {
+            prefs.edit {
+                putString(USER_ID, user.id)
+                putString(USER_PHONE, user.phone)
+                putString(USER_NAME, user.name ?: "")
+                putString(USER_EMAIL, user.email ?: "")
+            }
         }
     }
 
     override suspend fun getUser(): User? {
-        val prefs = context.userDataStore.data.firstOrNull() ?: return null
-        val id = prefs[USER_ID] ?: return null
-        val phone = prefs[USER_PHONE] ?: return null
-        val name = prefs[USER_NAME]
-        val email = prefs[USER_EMAIL]
-        return User(id = id, phone = phone, name = name, email = email)
+        return withContext(Dispatchers.IO) {
+            val id = prefs.getString(USER_ID, null) ?: return@withContext null
+            val phone = prefs.getString(USER_PHONE, null) ?: return@withContext null
+            val name = prefs.getString(USER_NAME, null)
+            val email = prefs.getString(USER_EMAIL, null)
+
+            User(id = id, phone = phone, name = name, email = email)
+        }
     }
 
     override suspend fun clearUser() {
-        context.userDataStore.edit { prefs ->
-            prefs.remove(USER_ID)
-            prefs.remove(USER_PHONE)
-            prefs.remove(USER_NAME)
-            prefs.remove(USER_EMAIL)
-
+        withContext(Dispatchers.IO) {
+            prefs.edit {
+                remove(USER_ID)
+                remove(USER_PHONE)
+                remove(USER_NAME)
+                remove(USER_EMAIL)
+            }
         }
     }
 }
-

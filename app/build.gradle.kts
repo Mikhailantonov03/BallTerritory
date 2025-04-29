@@ -50,15 +50,16 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
     //modules
+    implementation(projects.core.session)
     implementation(projects.features.coaches)
     implementation(projects.features.profile)
     implementation(projects.features.rent)
     implementation(projects.features.schedule)
     implementation(projects.features.main)
     implementation(projects.core.network)
-   implementation(projects.core.database)
-   implementation(projects.core.designsystem)
-   implementation(projects.features.auth)
+    implementation(projects.core.database)
+    implementation(projects.core.designsystem)
+    implementation(projects.features.auth)
     implementation(projects.core.navigation)
     implementation(projects.core.data)
     //navigation
@@ -74,6 +75,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel)
 
 implementation(libs.kotlin.stdlib)
+    implementation(libs.androidx.material3.android)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -82,8 +84,7 @@ implementation(libs.kotlin.stdlib)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    testImplementation(libs.junit)
+     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -91,3 +92,7 @@ implementation(libs.kotlin.stdlib)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+configurations.all {
+    exclude(group = "com.intellij", module = "annotations")
+}
+

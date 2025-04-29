@@ -7,7 +7,7 @@ import com.hfad.auth.data.model.CodeRequest
 import com.hfad.auth.data.model.PhoneRequest
 import com.hfad.auth.data.model.ProfileRequest
 import com.hfad.auth.data.model.safeApiCall
-import com.hfad.auth.data.model.toDomain
+import com.hfad.auth.data.mapper.toDomain
 import com.hfad.auth.domain.repository.AuthRepository
 import com.hfad.module.AuthTokens
 import com.hfad.module.User

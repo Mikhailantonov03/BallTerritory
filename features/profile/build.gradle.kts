@@ -2,6 +2,12 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+
+
+    //hilt
+    alias(libs.plugins.dagger.hilt.plugin)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.serialization)
 }
 
 android {
@@ -17,9 +23,7 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.1.1"
-    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -45,7 +49,8 @@ dependencies {
     implementation(projects.core.database)
     implementation(projects.core.navigation)
     implementation(projects.core.data)
-
+    implementation(projects.core.session)
+    implementation(projects.core.database)
 
 
     implementation(libs.kotlinx.serialization.json)
@@ -55,6 +60,11 @@ dependencies {
     implementation(libs.navigationHiltCompose)
 
 
+//hilt
+    implementation(libs.dagger.hilt)
+    ksp(libs.dagger.hilt.compiler)
+    implementation(libs.javax)
+
 
     implementation(libs.ui.text.google.fonts)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -63,9 +73,9 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
     implementation(libs.transport.api)
     testImplementation(libs.junit)
+    implementation(libs.androidx.material3.android)
 
 
 
@@ -75,4 +85,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+configurations.all {
+    exclude(group = "com.intellij", module = "annotations")
 }

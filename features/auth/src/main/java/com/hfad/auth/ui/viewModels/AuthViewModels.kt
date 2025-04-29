@@ -12,7 +12,7 @@ import com.hfad.auth.domain.usecase.VerifyCodeAndSaveUseCase
 import com.hfad.auth.ui.mvi.AuthIntents
 import com.hfad.auth.ui.mvi.AuthReducer
 import com.hfad.auth.ui.mvi.AuthUiState
-import com.hfad.auth.ui.mvi.UiStatus
+import com.hfad.module.UiStatus
 import com.hfad.data.token.tokens.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -80,6 +80,7 @@ class AuthViewModel @Inject constructor(
         _uiState.value = reducer.reduceResult(
             result = result,
             onSuccessState = { saveResult ->
+
                 when (saveResult) {
                     is SaveResult.NewUser -> AuthUiState(
                         tokens = saveResult.tokens,
@@ -97,6 +98,7 @@ class AuthViewModel @Inject constructor(
 
     private suspend fun handleProfileCompleted(name: String, email:String) {
         val result = completeProfileUseCase(name,email)
+
         _uiState.value = if (result.isSuccess) {
             AuthUiState(status = UiStatus.Idle)
         } else {

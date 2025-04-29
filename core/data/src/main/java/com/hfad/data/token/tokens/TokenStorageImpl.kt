@@ -1,66 +1,71 @@
 package com.hfad.data.token.tokens
-import androidx.datastore.preferences.preferencesDataStore
+
 import android.content.Context
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
-
-private val Context.dataStore by preferencesDataStore(name = "auth_prefs")
 
 @Singleton
 class TokenStorageImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : TokenStorage {
 
-    companion object {
-        private val ACCESS_TOKEN = stringPreferencesKey("access_token")
-        private val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
-        private val IS_GUEST = stringPreferencesKey("is_guest")
-
+    private val prefs: SharedPreferences by lazy {
+        context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
     }
 
+    companion object {
+        private const val ACCESS_TOKEN = "access_token"
+        private const val REFRESH_TOKEN = "refresh_token"
+        private const val IS_GUEST = "is_guest"
+    }
 
     override suspend fun setGuestMode(enabled: Boolean) {
-        context.dataStore.edit { prefs ->
-            prefs[IS_GUEST] = enabled.toString()
+        withContext(Dispatchers.IO) {
+            prefs.edit {
+                putBoolean(IS_GUEST, enabled)
+            }
         }
     }
 
     override suspend fun isGuestMode(): Boolean {
-        return context.dataStore.data
-            .map { prefs -> prefs[IS_GUEST] == "true" }
-            .firstOrNull() ?: false
+        return withContext(Dispatchers.IO) {
+            prefs.getBoolean(IS_GUEST, false)
+        }
     }
 
-
-
     override suspend fun saveTokens(access: String, refresh: String) {
-        context.dataStore.edit { prefs ->
-            prefs[ACCESS_TOKEN] = access
-            prefs[REFRESH_TOKEN] = refresh
+        withContext(Dispatchers.IO) {
+            prefs.edit {
+                putString(ACCESS_TOKEN, access)
+                putString(REFRESH_TOKEN, refresh)
+            }
         }
     }
 
     override suspend fun getAccessToken(): String? {
-        return context.dataStore.data
-            .map { prefs -> prefs[ACCESS_TOKEN] }
-            .firstOrNull()
+        return withContext(Dispatchers.IO) {
+            prefs.getString(ACCESS_TOKEN, null)
+        }
     }
 
     override suspend fun getRefreshToken(): String? {
-        return context.dataStore.data
-            .map { prefs -> prefs[REFRESH_TOKEN] }
-            .firstOrNull()
+        return withContext(Dispatchers.IO) {
+            prefs.getString(REFRESH_TOKEN, null)
+        }
     }
 
     override suspend fun clearTokens() {
-        context.dataStore.edit { prefs ->
-            prefs.remove(ACCESS_TOKEN)
-            prefs.remove(REFRESH_TOKEN)
+        withContext(Dispatchers.IO) {
+            prefs.edit {
+                remove(ACCESS_TOKEN)
+                remove(REFRESH_TOKEN)
+                remove(IS_GUEST)
+            }
         }
     }
 }

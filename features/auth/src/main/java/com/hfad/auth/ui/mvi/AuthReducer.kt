@@ -1,5 +1,7 @@
 package com.hfad.auth.ui.mvi
 
+import com.hfad.module.UiStatus
+
 class AuthReducer {
 
     fun <T> reduceResult(

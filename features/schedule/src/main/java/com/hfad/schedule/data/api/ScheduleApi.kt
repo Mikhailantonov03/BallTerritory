@@ -8,12 +8,12 @@ import retrofit2.http.Query
 
 interface ScheduleApi {
 
-    @GET("/auth/schedule")
+    @GET("schedule")
     suspend fun getSchedule(): List<ScheduleItemDto>
 
-    @POST("/auth/book")
+    @POST("book")
     suspend fun bookClass(@Query("scheduleId") scheduleId: String): Unit
 
-    @DELETE("/auth/book")
+    @DELETE("book")
     suspend fun cancelBooking(@Query("scheduleId") scheduleId: String): Unit
 }

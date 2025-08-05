@@ -14,7 +14,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://cd89ec30-714d-48d2-85c7-ebfa3d79df43.mock.pstmn.io"
+    private const val BASE_URL = "http://192.168.1.66:3000/"
 
     @Provides
     @Singleton

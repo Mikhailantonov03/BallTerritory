@@ -55,7 +55,7 @@ dependencies {
     implementation(projects.features.profile)
     implementation(projects.features.rent)
     implementation(projects.features.schedule)
-    implementation(projects.features.main)
+    implementation(projects.features.home)
     implementation(projects.core.network)
     implementation(projects.core.database)
     implementation(projects.core.designsystem)

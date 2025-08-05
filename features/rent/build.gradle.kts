@@ -2,6 +2,12 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+
+
+    //hilt
+    alias(libs.plugins.dagger.hilt.plugin)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.serialization)
 }
 
 android {
@@ -43,7 +49,12 @@ dependencies {
     implementation(projects.core.database)
     implementation(projects.core.navigation)
     implementation(projects.core.data)
-
+    implementation(projects.core.session)
+//network
+    implementation(libs.retrofit2)
+    implementation(libs.converter.gson)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
 
 
     implementation(libs.kotlinx.serialization.json)
@@ -52,8 +63,13 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.navigationHiltCompose)
 
-
-
+//hilt
+    implementation(libs.dagger.hilt)
+    ksp(libs.dagger.hilt.compiler)
+    implementation(libs.javax)
+//coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
     implementation(libs.ui.text.google.fonts)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -4,7 +4,7 @@ package com.hfad.schedule.domain.usecase
   import androidx.annotation.RequiresApi
   import com.hfad.schedule.domain.repository.ScheduleRepository
  import com.hfad.schedule.ui.model.ScheduleItem
-  import com.hfad.schedule.ui.mvi.toLocalDate
+  import com.hfad.schedule.ui.mvi.Schedule.toLocalDate
   import java.time.LocalDate
   import javax.inject.Inject
 

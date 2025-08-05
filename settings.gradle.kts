@@ -18,8 +18,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+
     }
 }
+
 
 rootProject.name = "BallTerritory"
 
@@ -34,7 +36,7 @@ include(":core:designsystem")
 
 include(":core:navigation")
 include(":core:data")
-include(":features:main")
+include(":features:home")
 include(":core:session")
 include(":features:schedule")
 include(":features:coaches")

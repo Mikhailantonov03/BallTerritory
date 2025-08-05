@@ -1,5 +1,6 @@
 package com.hfad.schedule.ui.screen
 
+
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
@@ -10,26 +11,37 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.hfad.module.UiStatus
-import com.hfad.schedule.ui.mvi.ScheduleIntents
-import com.hfad.schedule.ui.model.ScheduleItem
+ import com.hfad.module.UiStatus
+import com.hfad.schedule.ui.mvi.Schedule.ScheduleIntents
 import com.hfad.schedule.ui.model.SportFilterItem
-import com.hfad.schedule.ui.mvi.toFormattedDate
-import com.hfad.schedule.ui.mvi.toLocalDate
+import com.hfad.schedule.ui.mvi.Schedule.toFormattedDate
+import com.hfad.schedule.ui.mvi.Schedule.toLocalDate
+import com.hfad.schedule.ui.mvi.ScheduleCard.ScheduleCardIntent
+import com.hfad.schedule.ui.mvi.ScheduleCard.ScheduleCardUiState
 import com.hfad.schedule.ui.viewModel.ScheduleViewModel
 import com.hfad.ui.LoginEventViewModel
 import com.hfad.ui.SessionState
 import com.hfad.ui.SessionStateViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -45,89 +57,117 @@ fun ScheduleScreen(
     val sportFilters by viewModel.sportFilters.collectAsState()
 
     val pullRefreshState = rememberPullToRefreshState()
+    val today = remember { LocalDate.now() }
+    val initialPage = 1000
+    val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { Int.MAX_VALUE })
+    val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        viewModel.onIntent(ScheduleIntents.LoadScheduleForDate(uiState.selectedDate))
+    val pageDate = remember(pagerState.currentPage) {
+        today.plusDays((pagerState.currentPage - initialPage).toLong())
+    }
+
+    LaunchedEffect(pageDate) {
+        viewModel.onIntent(ScheduleIntents.OnDateSelected(pageDate))
+        viewModel.onIntent(ScheduleIntents.LoadScheduleForDate(pageDate))
     }
 
     PullToRefreshBox(
         isRefreshing = uiState.status is UiStatus.Loading,
-        onRefresh = { viewModel.onIntent(ScheduleIntents.LoadScheduleForDate(uiState.selectedDate))
-        },
+        onRefresh = { viewModel.onIntent(ScheduleIntents.LoadScheduleForDate(pageDate)) },
         state = pullRefreshState,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF272933))
     ) {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .background(Color(0xFF1F2129))
+                .padding(bottom = 8.dp)
         ) {
-            item {
-                CalendarHeader(
-                    selectedDate = uiState.selectedDate,
-                    onDateSelected = { viewModel.onIntent(ScheduleIntents.OnDateSelected(it)) }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            CalendarHeader(
+                currentDate = pageDate,
+                selectedDate = pageDate,
+                onDateSelected = { selected ->
+                    val offset = selected.toEpochDay() - today.toEpochDay()
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(initialPage + offset.toInt())
+                    }
+                }
+            )
+
+            if (sportFilters.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                SportFilterRow(
+                    filters = sportFilters,
+                    selectedSport = uiState.selectedSport,
+                    onSportSelected = {
+                        if (it != uiState.selectedSport) {
+                            viewModel.onIntent(ScheduleIntents.OnSportFilterSelected(it))
+                        }
+                    }
                 )
             }
 
-            item {
-                if (sportFilters.isNotEmpty()) {
-                    SportFilterRow(
-                        filters = sportFilters,
-                        selectedSport = uiState.selectedSport,
-                        onSportSelected = { viewModel.onIntent(ScheduleIntents.OnSportFilterSelected(it)) }
-                    )
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f)
+            ) { page ->
+                val dateForPage = today.plusDays((page - initialPage).toLong())
+                val scheduleForDay = uiState.filteredSchedule.filter {
+                    it.timestamp.toLocalDate() == dateForPage
                 }
-            }
+                val bookedIds = remember(bookings) { bookings.map { it.scheduleItemId }.toSet() }
+                val visibilityMap = remember { mutableStateMapOf<String, Boolean>() }
 
-            when (val status = uiState.status) {
-                is UiStatus.Loading -> {
-                    // При PullToRefreshBox отдельно показывать CircularProgressIndicator не нужно
-                    // он уже встроен в PullToRefreshBox
-                }
-
-                is UiStatus.Error -> {
-                    item {
-                        Text(
-                            text = status.message,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-
-                else -> {
-                    val scheduleForDay = uiState.filteredSchedule.filter {
-                        it.timestamp.toLocalDate() == uiState.selectedDate
-                    }
-
-                    val bookedIds = bookings.map { it.scheduleItemId }
-
-                    if (scheduleForDay.isEmpty()) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    if (uiState.status is UiStatus.Error) {
                         item {
-                            Text("На этот день нет занятий")
+                            Text(
+                                text = (uiState.status as UiStatus.Error).message,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    } else if (scheduleForDay.isEmpty()) {
+                        item {
+                            Text("На этот день нет занятий", color = Color.White)
                         }
                     } else {
-                        items(scheduleForDay, key = { it.id }) { item ->
-                            val isVisible = remember { mutableStateOf(false) }
-                            LaunchedEffect(Unit) {
-                                isVisible.value = true
+                        itemsIndexed(scheduleForDay, key = { _, item -> item.id }) { _, item ->
+                            LaunchedEffect(item.id) {
                                 delay(50)
+                                visibilityMap[item.id] = true
                             }
-
                             AnimatedVisibility(
-                                visible = isVisible.value,
+                                visible = visibilityMap[item.id] == true,
                                 enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
-                            )
-                            {
-                            ScheduleCard(
-                                item = item,
-                                isBooked = item.id in bookedIds,
-                                sessionState = sessionState,
-                                onSignUp = { viewModel.onIntent(ScheduleIntents.OnSignUpClick(it)) },
-                                onCancel = { viewModel.onIntent(ScheduleIntents.OnCancelClick(it)) },
-                                onLoginRequired = { loginEventViewModel.requestLogin() }
-                            )
-                        }
+                            ) {
+                                ScheduleCard(
+                                    item = item,
+                                    isBooked = item.id in bookedIds,
+                                    sessionState = sessionState,
+                                    cardState = uiState.cardStates[item.id] ?: ScheduleCardUiState(),
+                                    onIntent = {
+                                        viewModel.onIntent(
+                                            ScheduleIntents.OnScheduleCardIntent(
+                                                cardId = item.id,
+                                                intent = it
+                                            )
+                                        )
+                                    },
+                                    onSignUp = { viewModel.onIntent(ScheduleIntents.OnSignUpClick(it)) },
+                                    onCancel = { viewModel.onIntent(ScheduleIntents.OnCancelClick(it)) },
+                                    onLoginRequired = { loginEventViewModel.requestLogin() }
+                                )
+                            }
                         }
                     }
                 }
@@ -135,31 +175,60 @@ fun ScheduleScreen(
         }
     }
 }
-
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CalendarHeader(
+    currentDate: LocalDate,
     selectedDate: LocalDate,
     onDateSelected: (LocalDate) -> Unit
 ) {
-    val today = remember { LocalDate.now() }
-    val days = remember(today) {
-        (0..6).map { today.plusDays(it.toLong()) }
+    val days = remember(currentDate) {
+        (0..6).map { currentDate.plusDays(it.toLong()) }
     }
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(days) { day ->
-            OutlinedButton(
-                onClick = { onDateSelected(day) },
-                colors = if (day == selectedDate)
-                    ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                else ButtonDefaults.outlinedButtonColors()
+
+    LazyRow(
+        modifier = Modifier.padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        itemsIndexed(days) { index, day ->
+            val visible = remember { mutableStateOf(false) }
+
+            LaunchedEffect(Unit) {
+                delay(40L * index)
+                visible.value = true
+            }
+
+            AnimatedVisibility(
+                visible = visible.value,
+                enter = fadeIn()
             ) {
-                Text("${day.dayOfWeek.name.take(3)}\n${day.dayOfMonth}")
+                Button(
+                    onClick = { onDateSelected(day) },
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (day == selectedDate) Color(0xFF2D313A) else Color(0xFF1F2129),
+                        contentColor = Color.White
+                    ),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = day.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale("ru")).uppercase(),
+                            color = Color.White
+                        )
+                        Text(
+                            text = day.dayOfMonth.toString(),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun SportFilterRow(
@@ -167,7 +236,10 @@ fun SportFilterRow(
     selectedSport: String?,
     onSportSelected: (String?) -> Unit
 ) {
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    LazyRow(
+        modifier = Modifier.padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         item {
             FilterChip(
                 text = "Все (${filters.sumOf { it.count }})",
@@ -176,7 +248,7 @@ fun SportFilterRow(
             )
         }
 
-        items(filters) { filter ->
+        itemsIndexed(filters) { index, filter ->
             FilterChip(
                 text = "${filter.title} (${filter.count})",
                 isSelected = selectedSport == filter.title,
@@ -194,58 +266,19 @@ fun FilterChip(
 ) {
     Box(
         modifier = Modifier
-            .clip(MaterialTheme.shapes.medium)
+            .clip(RoundedCornerShape(24.dp))
             .background(
-                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                else MaterialTheme.colorScheme.surfaceVariant
+                if (isSelected) Color(0xFFFF4F4F) // серый фон для выбранного
+                else Color(0xFF272933)
             )
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
+
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            color = Color.White
         )
-    }
-}
-
-@Composable
-fun ScheduleCard(
-    item: ScheduleItem,
-    isBooked: Boolean,
-    sessionState: SessionState,
-    onSignUp: (String) -> Unit,
-    onCancel: (String) -> Unit,
-    onLoginRequired: () -> Unit
-) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(item.title, style = MaterialTheme.typography.titleMedium)
-            Text("Время: ${item.timestamp.toFormattedDate()}")
-            Text("Тренер: ${item.trainer}")
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            when {
-                sessionState.isFullyAuthorized && isBooked -> {
-                    Button(onClick = { onCancel(item.id) }) {
-                        Text("Отменить запись")
-                    }
-                }
-
-                sessionState.isFullyAuthorized -> {
-                    Button(onClick = { onSignUp(item.id) }) {
-                        Text("Записаться")
-                    }
-                }
-
-                else -> {
-                    OutlinedButton(onClick = onLoginRequired) {
-                        Text("Войти, чтобы записаться")
-                    }
-                }
-            }
-        }
     }
 }

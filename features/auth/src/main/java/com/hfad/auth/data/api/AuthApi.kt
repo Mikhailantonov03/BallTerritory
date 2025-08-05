@@ -10,13 +10,13 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface AuthApi {
-    @POST("/auth/send")
+    @POST("/send")
     suspend fun sendPhoneNumber(@Body request: PhoneRequest): Response<Unit>
 
-    @POST("/auth/verify")
+    @POST("/verify")
     suspend fun verifyCode(@Body request: CodeRequest): Response<AuthResponse>
 
-    @POST("auth/profile")
+    @POST("/profile")
     suspend fun completeProfile(@Body request: ProfileRequest): Response<Unit>
 }
 
